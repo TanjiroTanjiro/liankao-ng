@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  engineType = "client"
+  runtime = "bun"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// 用户账户信息
+model User {
+  /// 用户唯一标识（自增）
+  id          Int     @id @default(autoincrement())
+  /// 镜像站提供的 token
+  xsytoken    String?
+  /// 镜像站用户名（唯一）
+  xsyusername String  @unique
+  /// 用户昵称
+  nickname    String
+  /// 真实姓名
+  realname    String
+  /// 用户密码（应存储哈希值）
+  password    String?
+  /// 当前等级分 / 积分
+  rating      Int
+
+  /// 该用户参加的所有比赛记录
+  participations Participation[]
+}
+
+/// 题目信息
+model Problem {
+  /// 题目唯一标识（自增）
+  id          Int    @id @default(autoincrement())
+  /// 题目名称
+  name        String
+  /// 题目详细描述（支持 Markdown 或纯文本）
+  description String
+
+  /// 该题目被哪些比赛使用（通过中间表）
+  contests ContestProblem[]
+}
+
+/// 比赛信息
+model Contest {
+  /// 比赛唯一标识（自增）
+  id          Int      @id
+  /// 比赛名称
+  name        String
+  /// 比赛说明（可选）
+  description String
+  /// 比赛开始时间
+  startTime   DateTime
+  /// 比赛结束时间
+  endTime     DateTime
+
+  /// 本场比赛包含的题目（通过中间表）
+  problems ContestProblem[]
+  /// 本场比赛的所有参赛记录
+  participants Participation[]
+}
+
+/// 比赛与题目的关联表（定义每场比赛包含哪些题目、每题分值及顺序）
+model ContestProblem {
+  /// 关联的比赛ID
+  contestId Int
+  /// 关联的题目ID
+  problemId Int
+  /// 本题在该场比赛中的分值
+  point     Int @default(0)
+  /// 题目在比赛中的显示顺序（越小越靠前）
+  order     Int @default(0)
+
+  /// 关联的比赛
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  /// 关联的题目
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@id([contestId, problemId])
+  @@index([contestId])
+  @@index([problemId])
+}
+
+/// 用户参赛记录（每场比赛一条记录，包含总分、排名、赛后等级分及每题得分明细）
+model Participation {
+  /// 参赛记录唯一标识（自增）
+  id                Int      @id @default(autoincrement())
+  /// 参赛用户ID
+  userId            Int
+  /// 所参加的比赛ID
+  contestId         Int
+  /// 本场比赛总分
+  totalScore        Int      @default(0)
+  /// 本场比赛排名（赛后确定）
+  rank              Int
+  /// 比赛结束后的新 rating（即本次比赛后用户等级分变化结果）
+  postContestRating Int
+  /// 每题得分明细，JSON 格式，键为题目ID，值为得分，例如 { "101": 100, "102": 200 }
+  scores            Json
+
+  /// 关联的用户
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// 关联的比赛
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contestId])
+  @@index([contestId])
+  @@index([userId])
+}
