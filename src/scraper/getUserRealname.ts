@@ -1,6 +1,5 @@
 import * as cheerio from 'cheerio';
 import { fetchHtml } from './fetch';  
-import { randomId } from 'elysia/dist/utils';
 
 export async function getUserRealname(xstoken: string) {
     const webInfo=await fetchHtml("http://xsy.gdgzez.com.cn/JudgeOnline/modifypage.php",xstoken);
