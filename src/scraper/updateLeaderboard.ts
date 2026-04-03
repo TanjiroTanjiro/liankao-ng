@@ -1,13 +1,8 @@
 import { load, type CheerioAPI } from "cheerio";
-import { PrismaClient } from "../generated/prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { prisma } from "../prisma";
 import { fetchHtml } from "../scraper/fetch";
 import { registerGhostUser } from "../user/registerUser";
 
-const adapter = new PrismaLibSql({
-  url: process.env.DATABASE_URL || "file:../../data.db",
-});
-const prisma = new PrismaClient({ adapter });
 
 type ContestProblemRow = {
   problemId: number;

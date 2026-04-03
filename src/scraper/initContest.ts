@@ -1,14 +1,8 @@
 import * as cheerio from "cheerio";
 import { fetchHtml } from "./fetch"; 
-import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { PrismaClient } from "../generated/prisma/client";
+import { prisma } from "../prisma";
 import { syncLeaderboardByToken } from "./updateLeaderboard";
 
-const adapter = new PrismaLibSql({
-  url: process.env.DATABASE_URL || "file:../../data.db",
-});
-
-const prisma = new PrismaClient({ adapter });
 
 /**
  * 同步比赛信息：如果 ID 已存在则跳过，否则新建比赛和题目
