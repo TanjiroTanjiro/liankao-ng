@@ -1,6 +1,6 @@
 // src/user/registerUser.ts
 import { prisma } from "../prisma";
-import { getUserRealname } from "../scraper/getUserRealname";
+import { getUserRealname, getUserXsyName } from "../scraper/getUserInfo";
 
 export async function registerGhostUser(
   xsyusername: string,
@@ -23,11 +23,11 @@ export async function registerGhostUser(
 }
 
 export async function registerRealUser(
-  xsyusername: string,
   unHashedPassword: string,
   nickname: string,
   xsytoken: string
 ) {
+  let xsyusername=await getUserXsyName(xsytoken);
   const [password, userData] = await Promise.all([
     Bun.password.hash(unHashedPassword),
     prisma.user.findUnique({ where: { xsyusername } }),
