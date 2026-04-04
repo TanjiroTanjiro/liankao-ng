@@ -4,10 +4,10 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider   = "prisma-client"
+  output     = "../src/generated/prisma"
   engineType = "client"
-  runtime = "bun"
+  runtime    = "bun"
 }
 
 datasource db {
@@ -17,34 +17,36 @@ datasource db {
 /// 用户账户信息
 model User {
   /// 用户唯一标识（自增）
-  id          Int     @id @default(autoincrement())
+  id                         Int                         @id @default(autoincrement())
   /// 镜像站提供的 token
-  xsytoken    String?
+  xsytoken                   String?
   /// 镜像站用户名（唯一）
-  xsyusername String  @unique
+  xsyusername                String                      @unique
   /// 用户昵称
-  nickname    String
+  nickname                   String
   /// 真实姓名
-  realname    String
+  realname                   String
   /// 用户密码（应存储哈希值）
-  password    String?
+  password                   String?
   /// 当前等级分 / 积分
-  rating      Int
+  rating                     Int
   /// 该用户参加的所有比赛记录
-  participations Participation[]
-  votes Vote[]
+  participations             Participation[]
+  votes                      Vote[]
+  ratingUserChanges          RatingUserChange[]
+  ratingParticipationChanges RatingParticipationChange[]
 }
 
 /// 题目信息
 model Problem {
   /// 题目唯一标识（自增）
-  id          Int    @id @default(autoincrement())
-  difficulties  Int?
-  qualities     Int?
+  id           Int    @id @default(autoincrement())
+  difficulties Int?
+  qualities    Int?
   /// 题目名称
-  name        String
+  name         String
   /// 题目详细描述（支持 Markdown 或纯文本）
-  description String
+  description  String
 
   /// 该题目被哪些比赛使用（通过中间表）
   contests ContestProblem[]
@@ -53,22 +55,22 @@ model Problem {
 /// 比赛信息
 model Contest {
   /// 比赛唯一标识（自增）
-  id          Int      @id
+  id           Int              @id
   /// 比赛名称
-  name        String
+  name         String
   /// 比赛说明
-  description String
+  description  String
   /// 比赛开始时间
-  startTime   DateTime
+  startTime    DateTime
   /// 比赛结束时间
-  endTime     DateTime
-  qualities     Int?
-  type        String?
+  endTime      DateTime
+  qualities    Int?
+  type         String?
   /// 本场比赛包含的题目（通过中间表）
-  problems ContestProblem[]
+  problems     ContestProblem[]
   /// 本场比赛的所有参赛记录
   participants Participation[]
-  votes Vote[]
+  votes        Vote[]
 }
 
 /// 比赛与题目的关联表（定义每场比赛包含哪些题目、每题分值及顺序）
@@ -95,13 +97,13 @@ model ContestProblem {
 /// 用户参赛记录（每场比赛一条记录，包含总分、排名、赛后等级分及每题得分明细）
 model Participation {
   /// 参赛记录唯一标识（自增）
-  id                Int      @id @default(autoincrement())
+  id                Int  @id @default(autoincrement())
   /// 参赛用户ID
   userId            Int
   /// 所参加的比赛ID
   contestId         Int
   /// 本场比赛总分
-  totalScore        Int      @default(0)
+  totalScore        Int  @default(0)
   /// 本场比赛排名（赛后确定）
   rank              Int
   /// 比赛结束后的新 rating（即本次比赛后用户等级分变化结果）
@@ -110,9 +112,10 @@ model Participation {
   scores            Json
 
   /// 关联的用户
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                       User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   /// 关联的比赛
-  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  contest                    Contest                     @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  ratingParticipationChanges RatingParticipationChange[]
 
   @@unique([userId, contestId])
   @@index([contestId])
@@ -139,4 +142,57 @@ model Vote {
   @@unique([userId, contestId])
   @@index([userId])
   @@index([contestId])
+}
+
+model RatingCalculationBatch {
+  id             Int       @id @default(autoincrement())
+  startContestId Int
+  mode           String
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+  revertedAt     DateTime?
+
+  userChanges          RatingUserChange[]
+  participationChanges RatingParticipationChange[]
+
+  @@index([createdAt])
+  @@index([completedAt])
+  @@index([revertedAt])
+}
+
+model RatingUserChange {
+  id           Int @id @default(autoincrement())
+  batchId      Int
+  contestId    Int
+  userId       Int
+  beforeRating Int
+  afterRating  Int
+
+  batch RatingCalculationBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
+  @@index([contestId])
+  @@index([userId])
+}
+
+model RatingParticipationChange {
+  id                      Int  @id @default(autoincrement())
+  batchId                 Int
+  contestId               Int
+  participationId         Int
+  userId                  Int
+  beforeRank              Int
+  afterRank               Int
+  beforePostContestRating Int?
+  afterPostContestRating  Int?
+
+  batch         RatingCalculationBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  participation Participation          @relation(fields: [participationId], references: [id], onDelete: Cascade)
+  user          User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
+  @@index([contestId])
+  @@index([participationId])
+  @@index([userId])
 }
