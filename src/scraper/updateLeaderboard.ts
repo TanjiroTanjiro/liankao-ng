@@ -137,27 +137,13 @@ function assignRanks(rows: Omit<ParsedStandingRow, "rank">[]): ParsedStandingRow
   });
 }
 
-function calcPostContestRating(currentRating: number, totalScore: number): number {
-    return 1500;
-    // return currentRating + totalScore;
-}
-
 async function upsertStanding(
   userId: number,
   contestId: number,
-  row: ParsedStandingRow,
-  currentRating: number
+  row: ParsedStandingRow
 ) {
-  const postContestRating = calcPostContestRating(currentRating, row.totalScore);
 
   await prisma.$transaction(async (tx) => {
-    await tx.user.update({
-      where: { id: userId },
-      data: {
-        rating: postContestRating,
-      },
-    });
-
     await tx.participation.upsert({
       where: {
         userId_contestId: {
@@ -170,13 +156,11 @@ async function upsertStanding(
         contestId,
         totalScore: row.totalScore,
         rank: row.rank,
-        postContestRating,
         scores: row.scores,
       },
       update: {
         totalScore: row.totalScore,
         rank: row.rank,
-        postContestRating,
         scores: row.scores,
       },
     });
@@ -205,7 +189,7 @@ export async function syncLeaderboardFromHtml(
 
   for (const row of standings) {
     const user = await registerGhostUser(row.username, row.realname);
-    await upsertStanding(user.id, contestId, row, user.rating);
+    await upsertStanding(user.id, contestId, row);
   }
 
   return standings;

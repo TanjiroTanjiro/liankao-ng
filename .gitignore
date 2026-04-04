@@ -4,6 +4,7 @@
 
 data.db
 .env
+/prisma/migrations/
 
 # dependencies
 
