@@ -6,6 +6,7 @@
       "name": "elysia",
       "dependencies": {
         "@elysiajs/cors": "^1.4.1",
+        "@elysiajs/jwt": "^1.4.1",
         "@prisma/adapter-libsql": "^7.6.0",
         "@prisma/client": "^7.6.0",
         "axios": "^1.14.0",
@@ -32,6 +33,8 @@
     "@electric-sql/pglite-tools": ["@electric-sql/pglite-tools@0.3.1", "https://registry.npmmirror.com/@electric-sql/pglite-tools/-/pglite-tools-0.3.1.tgz", { "peerDependencies": { "@electric-sql/pglite": "0.4.1" } }, "sha512-C+T3oivmy9bpQvSxVqXA1UDY8cB9Eb9vZHL9zxWwEUfDixbXv4G3r2LjoTdR33LD8aomR3O9ZXEO3XEwr/cUCA=="],
 
     "@elysiajs/cors": ["@elysiajs/cors@1.4.1", "https://registry.npmmirror.com/@elysiajs/cors/-/cors-1.4.1.tgz", { "peerDependencies": { "elysia": ">= 1.4.0" } }, "sha512-lQfad+F3r4mNwsxRKbXyJB8Jg43oAOXjRwn7sKUL6bcOW3KjUqUimTS+woNpO97efpzjtDE0tEjGk9DTw8lqTQ=="],
+
+    "@elysiajs/jwt": ["@elysiajs/jwt@1.4.1", "", { "dependencies": { "jose": "^6.0.11" }, "peerDependencies": { "elysia": ">= 1.4.27" } }, "sha512-Qx28XE7hUf2XK/+HZB+hOBGSq6dPs4u1lk80wNge9jijAfzCwftxjOiAWO57RKYSEMdJTOG1ItEL5fbXjJyWsA=="],
 
     "@hono/node-server": ["@hono/node-server@1.19.11", "https://registry.npmmirror.com/@hono/node-server/-/node-server-1.19.11.tgz", { "peerDependencies": { "hono": "^4" } }, "sha512-dr8/3zEaB+p0D2n/IUrlPF1HZm586qgJNXK1a9fhg/PzdtkK7Ksd5l312tJX2yBuALqDYBlG20QEbayqPyxn+g=="],
 
@@ -284,6 +287,8 @@
     "isexe": ["isexe@2.0.0", "https://registry.npmmirror.com/isexe/-/isexe-2.0.0.tgz", {}, "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw=="],
 
     "jiti": ["jiti@2.6.1", "https://registry.npmmirror.com/jiti/-/jiti-2.6.1.tgz", { "bin": { "jiti": "lib/jiti-cli.mjs" } }, "sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ=="],
+
+    "jose": ["jose@6.2.2", "", {}, "sha512-d7kPDd34KO/YnzaDOlikGpOurfF0ByC2sEV4cANCtdqLlTfBlw2p14O/5d/zv40gJPbIQxfES3nSx1/oYNyuZQ=="],
 
     "js-base64": ["js-base64@3.7.8", "https://registry.npmmirror.com/js-base64/-/js-base64-3.7.8.tgz", {}, "sha512-hNngCeKxIUQiEUN3GPJOkz4wF/YvdUdbNL9hsBcMQTkKzboD7T/q3OYOuuPZLUE6dBxSGpwhk5mwuDud7JVAow=="],
 

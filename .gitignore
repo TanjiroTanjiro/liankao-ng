@@ -8,6 +8,7 @@ data.db
 
 # dependencies
 
+.agents/
 /node_modules
 /.pnp
 .pnp.js

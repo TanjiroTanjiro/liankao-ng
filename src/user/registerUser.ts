@@ -1,11 +1,12 @@
 // src/user/registerUser.ts
 import { prisma } from "../prisma";
 import { getUserRealname, getUserXsyName } from "../scraper/getUserInfo";
+import { UserPayload } from "../types/user";
 
 export async function registerGhostUser(
   xsyusername: string,
   realname: string
-) {
+)  : Promise<UserPayload>{
   const userData = await prisma.user.findUnique({
     where: { xsyusername },
   });
@@ -22,25 +23,16 @@ export async function registerGhostUser(
   });
 }
 
-export async function registerRealUser(
-  unHashedPassword: string,
-  nickname: string,
-  xsytoken: string
-) {
+export async function registerRealUser(unHashedPassword: string,nickname: string,xsytoken: string) : Promise<UserPayload>{
   let xsyusername=await getUserXsyName(xsytoken);
-  const [password, userData] = await Promise.all([
+  const [password, userOldData] = await Promise.all([
     Bun.password.hash(unHashedPassword),
     prisma.user.findUnique({ where: { xsyusername } }),
   ]);
-
   const realName = await getUserRealname(xsytoken);
-
-  if (userData) {
-    if (userData.password) {
-      throw new Error("User Exists!");
-    }
-
-    return prisma.user.update({
+  if (userOldData) {
+    if (userOldData.password)   throw new Error("User Exists!");
+    const userData=await prisma.user.update({
       where: { xsyusername },
       data: {
         password,
@@ -49,9 +41,16 @@ export async function registerRealUser(
         realname: realName,
       },
     });
+    return {
+        xsyusername: userData.xsyusername,
+        nickname: userData.nickname,
+        rating: userData.rating,
+        id: userData.id
+    };
+    // return {xsyusername,nickname,}
   }
 
-  return prisma.user.create({
+  const userData=await prisma.user.create({
     data: {
       xsyusername,
       nickname,
@@ -61,4 +60,10 @@ export async function registerRealUser(
       rating: 0,
     },
   });
+  return {
+        xsyusername: userData.xsyusername,
+        nickname: userData.nickname,
+        rating: userData.rating,
+        id: userData.id
+  };
 }
