@@ -4,7 +4,7 @@
 
 `bunx --bun prisma studio &` 这样来看数据库
 
-`.agents/*` 里面有给 LLM 看的文档。
+`.agents/*` 里面有给 LLM 看的文档，记得先 `bun install` & ` bunx skills add elysiajs/skills`。
 
 你需要先安装 bun，然后没准要升级一下 node。
 
