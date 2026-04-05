@@ -1,14 +1,14 @@
 `bun run dev` 来启动。
 
-Open http://localhost:3000/openapi 来看 apidocs.
+打开 http://localhost:3000/openapi 来看 apidocs.
 
 `bunx --bun prisma studio &` 这样来看数据库
 
 `.agents/*` 里面有给 LLM 看的文档。
 
-你需要先安装 bun，然后没准要升级一下 node
+你需要先安装 bun，然后没准要升级一下 node。
 
-`bun install` 会自动安装依赖
+`bun install` 会自动安装依赖。
 
 `.env` 里面设置一下这两个：
 
