@@ -1,9 +1,9 @@
 // src/modules/auth/index.ts
-import { Elysia, status } from 'elysia'
+import { Elysia, status,t } from 'elysia'
 import { jwt } from '@elysiajs/jwt'
 import { AuthService } from './service'
 import { RegisterBody,LoginBody } from './model'
-import { UserPayload } from '../../types/user'
+import { openapi } from '@elysiajs/openapi'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
@@ -34,11 +34,20 @@ export const auth = new Elysia({ prefix: '/auth' })
 
         return { success: true, message: 'Registration successful' }
       } catch (error: any) {
-        return status(400, { error: error.message || 'UKE' })
+        return status(400, { success:false,message: "Check your token!!!"+(error.message || ' UKE') })
       }
     },
     {
       body: RegisterBody,
+      response: {
+        200: t.Object({ success: t.Boolean(), message: t.String() }),
+        400: t.Object({ success: t.Boolean(), message: t.String() }),
+      },
+      detail: {
+        summary: '注册用户 /auth/register',
+        description: '使用用户名、小视野的 cookie 以及明文密码注册用户。哈希会在后端完成',
+        tags: ['auth']
+      }
     }
   )
   .post(
@@ -60,10 +69,23 @@ export const auth = new Elysia({ prefix: '/auth' })
 
         return { success: true, message: 'Login successful' }
       } catch (error: any) {
-        return status(401, { error: error.message || 'UKE' })
+        return status(401, {success:false, message: "Check your password or nickname!!!"+(error.message || ' UKE') })
       }
     },
     {
       body: LoginBody,
+      response: {
+        200: t.Object({ success: t.Boolean(), message: t.String() }),
+        401: t.Object({ success: t.Boolean(), message: t.String() }),
+      },
+      detail: {
+        summary: '登录 /auth/login',
+        description: '使用用户 nickname 和未哈希密码登录',
+        tags: ['auth']
+      },
     }
   )
+  // .get(
+    // '/*',
+    // ()=>{ return "OK"}
+  // )

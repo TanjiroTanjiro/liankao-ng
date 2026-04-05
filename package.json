@@ -15,6 +15,7 @@
     "elysia": "latest"
   },
   "devDependencies": {
+    "@elysiajs/openapi": "^1.4.14",
     "bun-types": "latest",
     "prisma": "^7.6.0"
   },
