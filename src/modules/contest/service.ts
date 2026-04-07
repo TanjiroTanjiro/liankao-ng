@@ -7,6 +7,7 @@ import type { ContestListQuery } from './model'
 function contestOrderBy(order: string | undefined): Prisma.ContestOrderByWithRelationInput[] {
   if (order === 'qualities-desc') return [{ qualities: 'desc' }, { id: 'desc' }]
   if (order === 'qualities-asc') return [{ qualities: 'asc' }, { id: 'asc' }]
+  if (order == 'asc')  return [{ startTime: 'asc' }, { id: 'asc' }]
   return [{ startTime: 'desc' }, { id: 'desc' }]
 }
 
