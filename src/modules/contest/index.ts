@@ -39,8 +39,8 @@ export const contest = new Elysia({
   .get('/:id', ({ params }) => ContestService.getById(params.id), {
     params: contestDetailParams,
     response: {
-      200: 'contestDetailResponse',
-      404: 'contestApiError',
+      200: contestDetailResponse,
+      404: contestApiError,
     },
     detail: {
       summary: '比赛详情',

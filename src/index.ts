@@ -1,4 +1,4 @@
-import { Elysia, status } from "elysia";
+import { Elysia, status, t } from "elysia";
 import { auth } from "./modules/auth";
 import { contest } from "./modules/contest"
 import { problem } from "./modules/problem"
@@ -32,6 +32,10 @@ const app = new Elysia({ prefix: '/api' })
     }))
     .get('/*', () => {
         return status(404,{message:"API not found."});
+    },{
+      response: {
+        404 : t.String(),
+      },
     })
     .listen(3000);
 
