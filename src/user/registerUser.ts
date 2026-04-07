@@ -25,6 +25,11 @@ export async function registerGhostUser(
 
 export async function registerRealUser(unHashedPassword: string,nickname: string,xsytoken: string) : Promise<UserPayload>{
   let xsyusername=await getUserXsyName(xsytoken);
+  // const password=await Bun.password.hash(unHashedPassword);
+  // const userOldData=await prisma.user.findUnique({ where: { xsyusername } });
+  // console.log(xsyusername)
+// console.log(process.env.JWT_SECRET);
+  // console.log(prisma.user.findUnique({ where: { xsyusername } }))
   const [password, userOldData] = await Promise.all([
     Bun.password.hash(unHashedPassword),
     prisma.user.findUnique({ where: { xsyusername } }),

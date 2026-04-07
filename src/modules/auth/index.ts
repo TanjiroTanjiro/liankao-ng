@@ -23,15 +23,9 @@ export const auth = new Elysia({ prefix: '/auth' })
       try {
         const userPayload=await service.register(xsytoken, nickname, unHashedPassword);
         const jwtToken = await jwt.sign(userPayload)
-
-        // ✅ 正确设置 Cookie
-        token.set({
-          value: jwtToken,
-          httpOnly: true,
-          path: '/',
-          maxAge: 7 * 24 * 60 * 60, // 7 days
-        })
-
+        token.value = jwtToken;
+        token.path = '/';
+        token.maxAge = 7 * 24 * 60 * 60; // 7 days
         return { success: true as const, message: 'Registration successful' }
       } catch (error: any) {
         return status(400, { success:false as const,message: "Check your token!!!"+(error.message || ' UKE') })
@@ -59,14 +53,10 @@ export const auth = new Elysia({ prefix: '/auth' })
       try {
         const userPayload = await service.login(nickname, unHashedPassword)
         const jwtToken = await jwt.sign(userPayload)
-
-        token.set({
-          value: jwtToken,
-          httpOnly: true,
-          path: '/',
-          maxAge: 7 * 24 * 60 * 60, // 7 days
-        })
-
+        console.log(userPayload,jwtToken)
+        token.value = jwtToken;
+        token.path = '/';
+        token.maxAge = 7 * 24 * 60 * 60; // 7 days
         return { success: true, message: 'Login successful' }
       } catch (error: any) {
         return status(401, {success:false, message: "Check your password or nickname!!!"+(error.message || ' UKE') })

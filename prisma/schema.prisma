@@ -23,7 +23,7 @@ model User {
   /// 镜像站用户名（唯一）
   xsyusername                String                      @unique
   /// 用户昵称
-  nickname                   String
+  nickname                   String                      @unique
   /// 真实姓名
   realname                   String
   /// 用户密码（应存储哈希值）
