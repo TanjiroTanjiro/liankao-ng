@@ -1,15 +1,14 @@
-import { Elysia } from "elysia";
+import { Elysia, status } from "elysia";
 import { auth } from "./modules/auth";
 import { view } from "./modules/view"
 import openapi from "@elysiajs/openapi";
-import prisma from "./prisma";
 
-const app = new Elysia()
+const app = new Elysia({ prefix: '/api' })
     .use(auth)
     .use(view)
     .use(openapi())
-    .get('/status', () => {
-        return {message: 'API ready'}
+    .get('/*', () => {
+        return status(404,{message:"API not found."});
     })
     .listen(3000);
 

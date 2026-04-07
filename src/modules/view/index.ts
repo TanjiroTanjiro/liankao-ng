@@ -1,8 +1,9 @@
 import { Elysia, t } from "elysia";
-import openapi from "@elysiajs/openapi";
 import { prisma } from "./../../prisma";
+import { authGuard } from "../../plugins/auth-guard";
 
 export const view = new Elysia({ prefix : '/view' })
+    .use(authGuard)
     .get(
         '/contests',
         async ( { query } ) => {
