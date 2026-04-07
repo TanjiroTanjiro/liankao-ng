@@ -1,0 +1,48 @@
+import { Elysia } from 'elysia'
+import { authGuard } from '../../plugins/auth-guard'
+import {
+  problemApiError,
+  problemDetailParams,
+  problemDetailResponse,
+  problemListQuery,
+  problemPaginatedResponse,
+} from './model'
+import { ProblemService } from './service'
+
+export const problem = new Elysia({
+  prefix: '/problem',
+  detail: {
+    security: [{ bearerAuth: [] }],
+    tags: ['problem'],
+    description: '需 Bearer JWT（Authorization: Bearer <token>）。',
+  },
+})
+  .use(authGuard)
+  .model({
+    listQuery: problemListQuery,
+    paginatedResponse: problemPaginatedResponse,
+    detailParams: problemDetailParams,
+    detailResponse: problemDetailResponse,
+    apiError: problemApiError,
+  })
+  .prefix('model', 'problem')
+  .get('/list', ({ query }) => ProblemService.list(query), {
+    query: problemListQuery,
+    response: { 200: problemPaginatedResponse },
+    detail: {
+      summary: '题目列表（分页）',
+      description:
+        'page / pageSize 由服务端截断；可选 order: qualities-desc | qualities-asc | difficulties-desc | difficulties-asc，默认按 id 降序。',
+    },
+  })
+  .get('/:id', ({ params }) => ProblemService.getById(params.id), {
+    params: problemDetailParams,
+    response: {
+      200: problemDetailResponse,
+      404: problemApiError,
+    },
+    detail: {
+      summary: '题目详情',
+      description: 'data.contestIds 为该题所在比赛 id 列表。',
+    },
+  })

@@ -32,9 +32,9 @@ export const auth = new Elysia({ prefix: '/auth' })
           maxAge: 7 * 24 * 60 * 60, // 7 days
         })
 
-        return { success: true, message: 'Registration successful' }
+        return { success: true as const, message: 'Registration successful' }
       } catch (error: any) {
-        return status(400, { success:false,message: "Check your token!!!"+(error.message || ' UKE') })
+        return status(400, { success:false as const,message: "Check your token!!!"+(error.message || ' UKE') })
       }
     },
     {
