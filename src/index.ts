@@ -3,6 +3,8 @@ import { auth } from "./modules/auth";
 import { contest } from "./modules/contest"
 import { problem } from "./modules/problem"
 import { vote } from "./modules/vote"
+import { rating } from "./modules/rating"
+import { create } from "./modules/create"
 import openapi from "@elysiajs/openapi";
 
 const app = new Elysia({ prefix: '/api' })
@@ -10,6 +12,8 @@ const app = new Elysia({ prefix: '/api' })
     .use(contest)
     .use(problem)
     .use(vote)
+    .use(rating)
+    .use(create)
     .use(openapi({
       documentation: {
         info: {
@@ -21,6 +25,8 @@ const app = new Elysia({ prefix: '/api' })
           { name: 'contest', description: '比赛（需登录）' },
           { name: 'problem', description: '题目（需登录）' },
           { name: 'vote', description: '投票（需登录）' },
+          { name: 'rating', description: '等级分查询' },
+          { name: 'create', description: '创建比赛并计算 rating（需登录）' },
         ],
         components: {
           securitySchemes: {

@@ -21,3 +21,11 @@ JWT_SECRET="Your Super-Secret Token"
 询问 LLM 似乎永远是个好主意。
 
 哦对了记得先 generate prisma 原型。
+
+在 `.env` 里配置管理员。
+
+例子：
+
+```
+ADMIN_NICKNAMES=alice,bob,admin
+```
