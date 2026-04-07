@@ -2,12 +2,14 @@ import { Elysia, status, t } from "elysia";
 import { auth } from "./modules/auth";
 import { contest } from "./modules/contest"
 import { problem } from "./modules/problem"
+import { vote } from "./modules/vote"
 import openapi from "@elysiajs/openapi";
 
 const app = new Elysia({ prefix: '/api' })
     .use(auth)
     .use(contest)
     .use(problem)
+    .use(vote)
     .use(openapi({
       documentation: {
         info: {
@@ -18,6 +20,7 @@ const app = new Elysia({ prefix: '/api' })
           { name: 'auth', description: '注册与登录' },
           { name: 'contest', description: '比赛（需登录）' },
           { name: 'problem', description: '题目（需登录）' },
+          { name: 'vote', description: '投票（需登录）' },
         ],
         components: {
           securitySchemes: {

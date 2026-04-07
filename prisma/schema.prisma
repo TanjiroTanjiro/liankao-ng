@@ -33,6 +33,7 @@ model User {
   /// 该用户参加的所有比赛记录
   participations             Participation[]
   votes                      Vote[]
+  problemVotes               ProblemVote[]
   ratingUserChanges          RatingUserChange[]
   ratingParticipationChanges RatingParticipationChange[]
 }
@@ -42,14 +43,14 @@ model Problem {
   /// 题目唯一标识（自增）
   id           Int    @id @default(autoincrement())
   difficulties Int?
-  qualities    Int?
+  qualities    Float?
   /// 题目名称
   name         String
   /// 题目详细描述（支持 Markdown 或纯文本）
   description  String
-
   /// 该题目被哪些比赛使用（通过中间表）
   contests ContestProblem[]
+  votes    ProblemVote[]
 }
 
 /// 比赛信息
@@ -64,7 +65,7 @@ model Contest {
   startTime    DateTime
   /// 比赛结束时间
   endTime      DateTime
-  qualities    Int?
+  qualities    Float?
   type         String?
   /// 本场比赛包含的题目（通过中间表）
   problems     ContestProblem[]
@@ -142,6 +143,28 @@ model Vote {
   @@unique([userId, contestId])
   @@index([userId])
   @@index([contestId])
+}
+
+/// 用户对题目的评价记录
+model ProblemVote {
+  id        Int      @id @default(autoincrement())
+  /// 投票的用户
+  userId    Int
+  /// 投票的题目
+  problemId Int
+  /// 分数（0~5 的整数）
+  score     Int
+  /// 投票时间
+  createdAt DateTime @default(now())
+
+  /// 关联关系
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  // 确保一个用户只能对一个题目投一次票
+  @@unique([userId, problemId])
+  @@index([userId])
+  @@index([problemId])
 }
 
 model RatingCalculationBatch {

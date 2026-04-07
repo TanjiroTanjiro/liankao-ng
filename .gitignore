@@ -2,6 +2,7 @@
 
 # database
 
+.cursor/
 data.db
 .env
 /prisma/migrations/
