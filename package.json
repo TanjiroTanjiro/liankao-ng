@@ -1,5 +1,5 @@
 {
-  "name": "lkrate-monorepo",
+  "name": "microhorizon-monorepo",
   "private": true,
   "workspaces": [
     "packages/*"
