@@ -1,4 +1,5 @@
 import { Elysia, status, t } from "elysia";
+import { cors } from "@elysiajs/cors";
 import { auth } from "./modules/auth";
 import { contest } from "./modules/contest"
 import { problem } from "./modules/problem"
@@ -8,6 +9,13 @@ import { create } from "./modules/create"
 import openapi from "@elysiajs/openapi";
 
 const app = new Elysia({ prefix: '/api' })
+    .use(
+      cors({
+        origin: true,
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization"],
+      }),
+    )
     .use(auth)
     .use(contest)
     .use(problem)
@@ -48,4 +56,6 @@ const app = new Elysia({ prefix: '/api' })
     })
     .listen(3000);
 
+export type App = typeof app
 
+app.listen(3000)

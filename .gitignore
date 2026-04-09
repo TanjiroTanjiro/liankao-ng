@@ -4,13 +4,17 @@
 
 .cursor/
 data.db
+packages/server/data.db
 .env
+packages/server/.env
 /prisma/migrations/
+packages/server/prisma/migrations/
 
 # dependencies
 
 .agents/
 /node_modules
+packages/*/node_modules
 /.pnp
 .pnp.js
 
@@ -50,3 +54,4 @@ yarn-error.log*
 package-lock.json
 **/*.bun
 /src/generated/prisma
+packages/server/src/generated/prisma
