@@ -26,7 +26,14 @@ export const auth = new Elysia({ prefix: '/auth' })
         token.value = jwtToken;
         token.path = '/';
         token.maxAge = 7 * 24 * 60 * 60; // 7 days
-        return { success: true as const, message: 'Registration successful' }
+        return { 
+          success: true as const, 
+          message: 'Registration successful',
+          data: {
+            token: jwtToken,
+            ...userPayload
+          }
+        }
       } catch (error: any) {
         return status(400, { success:false as const,message: "Check your token!!!"+(error.message || ' UKE') })
       }
@@ -34,7 +41,15 @@ export const auth = new Elysia({ prefix: '/auth' })
     {
       body: RegisterBody,
       response: {
-        200: t.Object({ success: t.Boolean(), message: t.String() }),
+        200: t.Object({ 
+          success: t.Boolean(), 
+          message: t.String(),
+          data: t.Object({
+            token: t.String(),
+            id: t.Number(),
+            nickname: t.String()
+          })
+        }),
         400: t.Object({ success: t.Boolean(), message: t.String() }),
       },
       detail: {
@@ -57,7 +72,14 @@ export const auth = new Elysia({ prefix: '/auth' })
         token.value = jwtToken;
         token.path = '/';
         token.maxAge = 7 * 24 * 60 * 60; // 7 days
-        return { success: true, message: 'Login successful' }
+        return { 
+          success: true, 
+          message: 'Login successful',
+          data: {
+            token: jwtToken,
+            ...userPayload
+          }
+        }
       } catch (error: any) {
         return status(401, {success:false, message: "Check your password or nickname!!!"+(error.message || ' UKE') })
       }
@@ -65,7 +87,15 @@ export const auth = new Elysia({ prefix: '/auth' })
     {
       body: LoginBody,
       response: {
-        200: t.Object({ success: t.Boolean(), message: t.String() }),
+        200: t.Object({ 
+          success: t.Boolean(), 
+          message: t.String(),
+          data: t.Object({
+            token: t.String(),
+            id: t.Number(),
+            nickname: t.String()
+          })
+        }),
         401: t.Object({ success: t.Boolean(), message: t.String() }),
       },
       detail: {

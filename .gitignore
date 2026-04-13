@@ -55,3 +55,5 @@ package-lock.json
 **/*.bun
 /src/generated/prisma
 packages/server/src/generated/prisma
+
+test.out
