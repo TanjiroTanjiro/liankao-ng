@@ -4,11 +4,13 @@
     <div class="header">
       <h1>比赛列表</h1>
       <div class="sort-bar">
-        <el-select v-model="sortBy" @change="handleSortChange" placeholder="排序方式">
-          <el-option label="开始时间（最新）" value="desc" />
-          <el-option label="开始时间（最早）" value="asc" />
-          <el-option label="质量评分（从高到低）" value="qualities-desc" />
-          <el-option label="质量评分（从低到高）" value="qualities-asc" />
+        <el-select class="sort-select" v-model="sortField" @change="handleSortChange" placeholder="排序字段">
+          <el-option label="时间" value="time" />
+          <el-option label="质量" value="qualities" />
+        </el-select>
+        <el-select class="sort-select" v-model="sortDirection" @change="handleSortChange" placeholder="排序方向">
+          <el-option label="Asc" value="asc" />
+          <el-option label="Desc" value="desc" />
         </el-select>
       </div>
     </div>
@@ -60,6 +62,7 @@
       v-model="voteDialogVisible"
       title="比赛投票"
       width="420px"
+      align-center
       :close-on-click-modal="false"
       @closed="resetVoteState"
     >
@@ -99,7 +102,8 @@ import { getContestList, voteContest } from '../api/contest'
 const router = useRouter()
 const loading = ref(false)
 const contests = ref([])
-const sortBy = ref('desc')
+const sortField = ref('time')
+const sortDirection = ref('desc')
 const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
@@ -117,7 +121,7 @@ const fetchContests = async () => {
     const params = {
       page: currentPage.value,
       pageSize: pageSize.value,
-      order: sortBy.value
+      order: getContestOrder()
     }
     const res = await getContestList(params)
     contests.value = res.data.items
@@ -127,6 +131,13 @@ const fetchContests = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const getContestOrder = () => {
+  if (sortField.value === 'qualities') {
+    return sortDirection.value === 'asc' ? 'qualities-asc' : 'qualities-desc'
+  }
+  return sortDirection.value === 'asc' ? 'asc' : 'desc'
 }
 
 const handleSortChange = () => {
@@ -190,7 +201,7 @@ const getQualitiesStyle = (qualities) => {
   }
 
   // 以 1~5 映射绿色强度：越高越绿
-  const clamped = Math.min(5, Math.max(1, numeric))-1
+  const clamped = Math.min(5, Math.max(1, numeric))
   const ratio = (clamped - 1) / 4
   // 增强跨度：低分偏浅灰绿，高分偏深翠绿
   const lightness = 94 - ratio * 54
@@ -204,7 +215,7 @@ const getQualitiesStyle = (qualities) => {
     background: `linear-gradient(135deg, hsl(125 ${saturation}% ${lightness}%) 0%, hsl(125 ${Math.min(100, saturation + 10)}% ${midLightness}%) 52%, hsl(125 ${Math.min(100, saturation + 14)}% ${endLightness}%) 100%)`,
     border: `1px solid hsl(125 ${Math.min(95, saturation + 6)}% ${borderLightness}%)`,
     color: `hsl(125 ${Math.min(100, saturation + 12)}% ${textLightness}%)`,
-    boxShadow: `inset 0 0 0 1px hsl(125 ${Math.min(100, saturation + 12)}% ${Math.max(18, borderLightness - 10)}% / 0.12)`
+    boxShadow: `inset 0 0 0 1px hsla(125, ${Math.min(100, saturation + 12)}%, ${Math.max(18, borderLightness - 10)}%, 0.12)`
   }
 }
 
@@ -274,7 +285,15 @@ onMounted(() => {
 }
 
 .sort-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  align-items: center;
   margin-bottom: 16px;
+}
+
+.sort-select {
+  width: 128px;
 }
 
 .contest-list {

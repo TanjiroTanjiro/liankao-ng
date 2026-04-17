@@ -3,37 +3,48 @@
   <div class="problem-list-container">
     <div class="header">
       <h1>题目列表</h1>
-      <div class="search-bar">
-        <el-input
-          v-model="searchQuery"
-          placeholder="搜索题目名称"
-          clearable
-          @input="handleSearch"
-        >
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
-      </div>
       <div class="sort-bar">
-        <el-select v-model="sortBy" @change="handleSortChange" placeholder="排序方式">
-          <el-option label="ID（从大到小）" value="desc" />
-          <el-option label="ID（从小到大）" value="asc" />
-          <el-option label="难度（从高到低）" value="difficulties-desc" />
-          <el-option label="难度（从低到高）" value="difficulties-asc" />
-          <el-option label="质量（从高到低）" value="qualities-desc" />
-          <el-option label="质量（从低到高）" value="qualities-asc" />
+        <el-select class="sort-select" v-model="sortField" @change="handleSortChange" placeholder="排序字段">
+          <el-option label="ID" value="id" />
+          <el-option label="难度" value="difficulties" />
+          <el-option label="质量" value="qualities" />
+        </el-select>
+        <el-select class="sort-select" v-model="sortDirection" @change="handleSortChange" placeholder="排序方向">
+          <el-option label="Asc" value="asc" />
+          <el-option label="Desc" value="desc" />
         </el-select>
       </div>
     </div>
     <div class="problem-list" v-loading="loading">
-      <ProblemItem
-        v-for="problem in problems"
-        :key="problem.id"
-        :problem="problem"
-        :user-rating="userRatings[problem.id] || 0"
-        @rated="handleRated"
-      />
+      <el-table v-if="problems.length > 0" :data="problems" stripe>
+        <el-table-column label="ID" width="90">
+          <template #default="{ row }">
+            <span class="problem-id">{{ row.id }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="题目信息" min-width="420">
+          <template #default="{ row }">
+            <div class="problem-main">
+              <el-button class="problem-link" type="primary" link @click="goToProblemDetail(row.id)">
+                {{ row.name }}
+              </el-button>
+              <div class="problem-description">{{ row.description || '-' }}</div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="Qualities" width="220">
+          <template #default="{ row }">
+            <span class="qualities-badge" :class="getQualitiesClass(row.qualities)" :style="getQualitiesStyle(row.qualities)">
+              {{ formatQualities(row.qualities) }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Vote" width="150" align="center">
+          <template #default="{ row }">
+            <el-button size="small" @click="openVoteDialog(row)">投票</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
       <el-empty v-if="!loading && problems.length === 0" description="暂无题目" />
     </div>
     <div class="pagination" v-if="total > 0">
@@ -47,24 +58,63 @@
         @current-change="handlePageChange"
       />
     </div>
+
+    <el-dialog
+      v-model="voteDialogVisible"
+      title="题目投票"
+      width="420px"
+      align-center
+      :close-on-click-modal="false"
+      @closed="resetVoteState"
+    >
+      <div v-if="activeProblem" class="vote-dialog-content">
+        <div class="vote-target">当前题目：{{ activeProblem.name }}</div>
+
+        <div class="rating-container theme-krajee-svg rating-sm rating-animate">
+          <button
+            v-for="n in 5"
+            :key="n"
+            type="button"
+            class="rating-star"
+            :class="{ selected: selectedVoteScore !== null && selectedVoteScore >= n }"
+            @click="selectVoteScore(n)"
+          >
+            {{ isZeroMode ? '💩' : (selectedVoteScore >= n ? '★' : '☆') }}
+          </button>
+        </div>
+
+        <div class="vote-actions">
+          <el-button @click="setZeroMode">设为0</el-button>
+          <el-button type="primary" :disabled="!canSubmitVote || submittingVote" :loading="submittingVote" @click="submitVote">
+            提交投票
+          </el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { ElInput, ElSelect, ElOption, ElPagination, ElEmpty, ElIcon, ElMessage } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
-import ProblemItem from '../components/ProblemItem.vue'
-import { getProblemList } from '../api/problem'
+import { computed, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElTable, ElTableColumn, ElSelect, ElOption, ElPagination, ElEmpty, ElDialog, ElButton, ElMessage } from 'element-plus'
+import { getProblemList, voteProblem } from '../api/problem'
 
+const router = useRouter()
 const loading = ref(false)
 const problems = ref([])
-const searchQuery = ref('')
-const sortBy = ref('desc')
+const sortField = ref('id')
+const sortDirection = ref('desc')
 const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
-const userRatings = ref({})
+const voteDialogVisible = ref(false)
+const activeProblem = ref(null)
+const selectedVoteScore = ref(null)
+const isZeroMode = ref(false)
+const submittingVote = ref(false)
+
+const canSubmitVote = computed(() => selectedVoteScore.value !== null)
 
 const fetchProblems = async () => {
   loading.value = true
@@ -72,10 +122,7 @@ const fetchProblems = async () => {
     const params = {
       page: currentPage.value,
       pageSize: pageSize.value,
-      order: sortBy.value
-    }
-    if (searchQuery.value) {
-      params.name = searchQuery.value
+      order: getProblemOrder()
     }
     const res = await getProblemList(params)
     problems.value = res.data.items
@@ -87,9 +134,14 @@ const fetchProblems = async () => {
   }
 }
 
-const handleSearch = () => {
-  currentPage.value = 1
-  fetchProblems()
+const getProblemOrder = () => {
+  if (sortField.value === 'difficulties') {
+    return sortDirection.value === 'asc' ? 'difficulties-asc' : 'difficulties-desc'
+  }
+  if (sortField.value === 'qualities') {
+    return sortDirection.value === 'asc' ? 'qualities-asc' : 'qualities-desc'
+  }
+  return sortDirection.value === 'asc' ? 'asc' : 'desc'
 }
 
 const handleSortChange = () => {
@@ -106,10 +158,95 @@ const handlePageChange = () => {
   fetchProblems()
 }
 
-const handleRated = ({ problemId, rating }) => {
-  userRatings.value[problemId] = rating
-  // 重新获取列表以更新质量评分
-  fetchProblems()
+const formatQualities = (qualities) => {
+  if (qualities === null || qualities === undefined) return '-'
+  const numeric = Number(qualities)
+  if (Number.isNaN(numeric)) return '-'
+  const value = numeric.toFixed(2)
+  if (numeric < 1.0) return `💩 ${value}`
+  return value
+}
+
+const getQualitiesClass = (qualities) => {
+  if (qualities === null || qualities === undefined) return 'qualities-null'
+  const numeric = Number(qualities)
+  if (Number.isNaN(numeric)) return 'qualities-null'
+  if (numeric < 1.0) return 'qualities-low'
+  return 'qualities-normal'
+}
+
+const getQualitiesStyle = (qualities) => {
+  if (qualities === null || qualities === undefined) return {}
+  const numeric = Number(qualities)
+  if (Number.isNaN(numeric)) return {}
+
+  if (numeric < 1.0) {
+    return {
+      background: 'linear-gradient(135deg, #f2e7df 0%, #b08968 52%, #7f5539 100%)',
+      border: '1px solid #8b5e3c',
+      color: '#4a2d18',
+      boxShadow: 'inset 0 0 0 1px rgba(127, 85, 57, 0.18)'
+    }
+  }
+
+  const clamped = Math.min(5, Math.max(1, numeric))
+  const ratio = (clamped - 1) / 4
+  const lightness = 94 - ratio * 54
+  const saturation = 34 + ratio * 62
+  const midLightness = Math.max(26, lightness - (20 + ratio * 6))
+  const endLightness = Math.max(18, lightness - (32 + ratio * 8))
+  const textLightness = Math.max(14, 32 - ratio * 14)
+  const borderLightness = Math.max(20, 62 - ratio * 34)
+
+  return {
+    background: `linear-gradient(135deg, hsl(125 ${saturation}% ${lightness}%) 0%, hsl(125 ${Math.min(100, saturation + 10)}% ${midLightness}%) 52%, hsl(125 ${Math.min(100, saturation + 14)}% ${endLightness}%) 100%)`,
+    border: `1px solid hsl(125 ${Math.min(95, saturation + 6)}% ${borderLightness}%)`,
+    color: `hsl(125 ${Math.min(100, saturation + 12)}% ${textLightness}%)`,
+    boxShadow: `inset 0 0 0 1px hsla(125, ${Math.min(100, saturation + 12)}%, ${Math.max(18, borderLightness - 10)}%, 0.12)`
+  }
+}
+
+const goToProblemDetail = (id) => {
+  router.push(`/problems/${id}`)
+}
+
+const openVoteDialog = (problem) => {
+  activeProblem.value = problem
+  selectedVoteScore.value = null
+  isZeroMode.value = false
+  voteDialogVisible.value = true
+}
+
+const selectVoteScore = (score) => {
+  selectedVoteScore.value = score
+  isZeroMode.value = false
+}
+
+const setZeroMode = () => {
+  selectedVoteScore.value = 0
+  isZeroMode.value = true
+}
+
+const resetVoteState = () => {
+  activeProblem.value = null
+  selectedVoteScore.value = null
+  isZeroMode.value = false
+  submittingVote.value = false
+}
+
+const submitVote = async () => {
+  if (!activeProblem.value || selectedVoteScore.value === null) return
+  submittingVote.value = true
+  try {
+    await voteProblem(activeProblem.value.id, selectedVoteScore.value)
+    ElMessage.success('投票成功')
+    voteDialogVisible.value = false
+    fetchProblems()
+  } catch (error) {
+    ElMessage.error(error?.message || '投票失败')
+  } finally {
+    submittingVote.value = false
+  }
 }
 
 onMounted(() => {
@@ -134,13 +271,16 @@ onMounted(() => {
   color: #303133;
 }
 
-.search-bar {
+.sort-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  align-items: center;
   margin-bottom: 16px;
-  max-width: 400px;
 }
 
-.sort-bar {
-  margin-bottom: 16px;
+.sort-select {
+  width: 128px;
 }
 
 .problem-list {
@@ -151,5 +291,111 @@ onMounted(() => {
   margin-top: 24px;
   display: flex;
   justify-content: center;
+}
+
+.problem-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.problem-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.problem-link {
+  justify-content: flex-start;
+  padding: 0;
+  font-size: 15px;
+}
+
+.problem-description {
+  color: #909399;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.qualities-badge {
+  display: inline-block;
+  min-width: 92px;
+  text-align: center;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+}
+
+.qualities-normal {
+  color: #0f5132;
+}
+
+.qualities-low {
+  color: #4e342e;
+}
+
+.qualities-null {
+  color: #606266;
+  background: #f2f6fc;
+}
+
+.vote-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vote-target {
+  font-size: 14px;
+  color: #303133;
+}
+
+.rating-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.theme-krajee-svg {
+  padding: 8px 10px;
+  border: 1px solid #dcdfe6;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.rating-sm {
+  font-size: 20px;
+}
+
+.rating-animate .rating-star {
+  transition: transform 0.15s ease, color 0.15s ease, text-shadow 0.15s ease;
+}
+
+.rating-star {
+  border: none;
+  background: transparent;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: #c0c4cc;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rating-star:hover {
+  transform: scale(1.12);
+  color: #f7ba2a;
+  text-shadow: 0 2px 8px rgba(247, 186, 42, 0.35);
+}
+
+.rating-star.selected {
+  color: #f7ba2a;
+  text-shadow: 0 2px 8px rgba(247, 186, 42, 0.35);
+}
+
+.vote-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>
