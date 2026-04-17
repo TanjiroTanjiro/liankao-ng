@@ -8,9 +8,6 @@
         </div>
       </template>
       <el-form :model="registerForm" :rules="rules" ref="registerFormRef" label-position="top">
-        <el-form-item label="用户名" prop="xsyusername">
-          <el-input v-model="registerForm.xsyusername" placeholder="请输入用户名" />
-        </el-form-item>
         <el-form-item label="昵称" prop="nickname">
           <el-input v-model="registerForm.nickname" placeholder="请输入昵称" />
         </el-form-item>
@@ -25,8 +22,7 @@
         <el-form-item label="小视野Token" prop="xsytoken">
           <el-input 
             v-model="registerForm.xsytoken" 
-            type="textarea" 
-            :rows="3"
+            type="text" 
             placeholder="请输入小视野Token"
           />
         </el-form-item>
@@ -57,16 +53,12 @@ const registerFormRef = ref(null)
 const loading = ref(false)
 
 const registerForm = reactive({
-  xsyusername: '',
   nickname: '',
   unHashedPassword: '',
   xsytoken: ''
 })
 
 const rules = {
-  xsyusername: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
-  ],
   nickname: [
     { required: true, message: '请输入昵称', trigger: 'blur' }
   ],
