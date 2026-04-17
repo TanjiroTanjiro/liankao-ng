@@ -1,6 +1,6 @@
 `bun run dev` 来启动。
 
-打开 http://localhost:3000/openapi 来看 apidocs.
+打开 http://localhost:3000/api/openapi 来看 apidocs.
 
 `bunx --bun prisma studio &` 这样来看数据库
 
