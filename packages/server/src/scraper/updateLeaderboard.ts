@@ -59,21 +59,21 @@ function buildProblemColumnMap(
 
   if (headerCells.length === 0) {
     // 没有表头就按默认顺序：第 1 列 rank，第 2 列 username，第 3 列 realname，后面依次是题目
-    return contestProblems.map((_, i) => 3 + i);
+    return contestProblems.map((_, i) => 4 + i);
   }
 
   return contestProblems.map((cp, idx) => {
     const target = normalizeHeader(cp.problem.name);
 
-    let found = headerCells.findIndex((h, colIdx) => colIdx >= 3 && h === target);
+    let found = headerCells.findIndex((h, colIdx) => colIdx >= 4 && h === target);
     if (found >= 0) return found;
 
     found = headerCells.findIndex(
-      (h, colIdx) => colIdx >= 3 && (h.includes(target) || target.includes(h))
+      (h, colIdx) => colIdx >= 4 && (h.includes(target) || target.includes(h))
     );
     if (found >= 0) return found;
 
-    return 3 + idx;
+    return 4 + idx;
   });
 }
 

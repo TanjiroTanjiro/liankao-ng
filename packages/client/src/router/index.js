@@ -36,6 +36,18 @@ const routes = [
     name: 'ContestDetail',
     component: () => import('../views/ContestDetail.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/users',
+    name: 'UserList',
+    component: () => import('../views/UserList.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/users/:id',
+    name: 'UserDetail',
+    component: () => import('../views/UserDetail.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
