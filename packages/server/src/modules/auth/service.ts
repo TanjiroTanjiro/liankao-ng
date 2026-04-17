@@ -1,6 +1,6 @@
 // src/modules/auth/service.ts
-import { loginCheck } from '../../user/loginCheck'
-import { registerRealUser } from '../../user/registerUser'
+import { loginCheck } from './loginCheck'
+import { registerRealUser } from './registerUser'
 import { UserPayload } from '../../types/user'
 
 export function hasInvalidUsernameChars(username: string): boolean {
