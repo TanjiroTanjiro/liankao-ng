@@ -17,7 +17,7 @@
       </div>
       <div class="user-info">
         <template v-if="userStore.isLoggedIn">
-          <span class="username">{{ userStore.userInfo?.nickname || '用户' }}</span>
+          <span class="username">{{ userStore.userInfo?.nickname || '' }}</span>
           <el-button type="primary" link @click="handleLogout">退出</el-button>
         </template>
         <template v-else>

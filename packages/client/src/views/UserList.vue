@@ -15,7 +15,7 @@
         <el-table-column label="昵称" min-width="200">
           <template #default="{ row }">
             <el-button class="user-link" type="primary" link @click="goToUserDetail(row.id)">
-              {{ row.nickname || '-' }}
+              <UserName :uid="row.id" :user="row" />
             </el-button>
           </template>
         </el-table-column>
@@ -46,6 +46,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElTable, ElTableColumn, ElSelect, ElOption, ElPagination, ElEmpty, ElButton, ElMessage } from 'element-plus'
 import { getUserList } from '../api/user'
+import UserName from '../components/UserName.vue'
 
 const router = useRouter()
 const loading = ref(false)

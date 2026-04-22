@@ -13,7 +13,10 @@
         </div>
         <div class="info-item">
           <span class="label">昵称：</span>
-          <span class="value">{{ userInfo.nickname || '-' }}</span>
+          <span class="value">
+            <UserName v-if="userInfo" :uid="userInfo.id" :user="userInfo" />
+            <span v-else>ErrorUser</span>
+          </span>
         </div>
         <div class="info-item">
           <span class="label">XsyUsername：</span>
@@ -42,6 +45,7 @@ import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts'
 import { getUserDetail, getUserRatingChanges } from '../api/user'
+import UserName from '../components/UserName.vue'
 
 const route = useRoute()
 const loading = ref(false)
